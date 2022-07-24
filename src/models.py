@@ -8,17 +8,17 @@ class Book(db.Model):
 
     id = db.Column(db.INTEGER, primary_key=True)
     title = db.Column(db.VARCHAR(120), nullable=False)
-    author = db.Column(db.VARCHAR(120), index=True, nulladble=False)
+    author = db.Column(db.VARCHAR(120), index=True, nullable=False)
     uuid = db.Column(db.VARCHAR(36), unique=True)
     price = db.Column(db.FLOAT)
     rating = db.Column(db.FLOAT)
 
-    def __init__(self, title, author, price, rating):
+    def __init__(self, title, author, price, ratting):
         self.title = title
         self.author = author
         self.uuid = str(uuid.uuid4())
         self.price = price
-        self.rating = rating
+        self.rating = ratting
 
     def __repr__(self):
         return f'Book({self.title}, {self.author}, {self.price}, {self.rating})'

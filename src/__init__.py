@@ -14,6 +14,6 @@ db.init_app(app)
 migrate = Migrate(app, db)
 api = Api(app)
 
-from . import routes
+from . import routes, models
 
 

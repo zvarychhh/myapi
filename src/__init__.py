@@ -9,6 +9,7 @@ import config
 app = Flask(__name__)
 app.config.from_object(config.Config)
 db = SQLAlchemy()
+db.init_app(app)
 migrate = Migrate(app, db)
 api = Api(app)
 

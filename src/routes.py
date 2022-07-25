@@ -56,18 +56,18 @@ class BookListAPI(Resource):
             return '', 404
         book_json = request.json
         title = book_json.get('title')
-        author = book_json.get('author'),
-        price = book_json.get('price'),
+        author = book_json.get('author')
+        price = book_json.get('price')
         ratting = book_json.get('ratting')
 
         if title:
             book.title = title
-        elif author:
+        if author:
             book.author = author
-        elif price:
-            book.author = price
-        elif ratting:
-            book.author = ratting
+        if price:
+            book.price = price
+        if ratting:
+            book.ratting = ratting
 
         db.session.add(book)
         db.session.commit()

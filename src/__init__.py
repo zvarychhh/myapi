@@ -5,12 +5,11 @@ from flask_sqlalchemy import SQLAlchemy
 
 import config
 
-
+db = SQLAlchemy()
 app = Flask(__name__)
 app.config.from_object(config.Config)
-db = SQLAlchemy()
+app.app_context().push()
 db.init_app(app)
-# check here
 migrate = Migrate(app, db)
 api = Api(app)
 

@@ -1,52 +1,85 @@
 from flask import request
 from flask_restful import Resource
 
-from src import api
-
-
-def get_all_books():
-    return [{'id': '1', 'name': '1984', 'author': 'George Orwell'},
-            {'id': '2', 'name': 'We Are the Brennans', 'author': 'Tracey Lange'},
-            {'id': '3', 'name': 'The In Between', 'author': 'Marc Klein'},
-            {'id': '4', 'name': 'The Mix-Up', 'author': 'Holly McCulloch'},
-            {'id': '5', 'name': 'Sunset', 'author': 'Jessie Cave'}]
-    # {'id': '6', 'name': 'test', 'author': 'test'}
-
-
-def get_books_by_bid(uuid: str) -> dict:
-    books = get_all_books()
-    book = list(filter(lambda x: x['id'] == uuid, books))
-    return book[0] if book else {}
-
-
-def create_book(book_json: dict) -> list[dict]:
-    books = get_all_books()
-    books.append(book_json)
-    return books
+from src import api, db
+from src.models import Book
 
 
 class BookListAPI(Resource):
     def get(self, uuid=None):
         if not uuid:
-            books = get_all_books()
-            return books, 200
-        book = get_books_by_bid(uuid)
+            books = db.session.query(Book).all()
+            return [book.to_dict() for book in books], 200
+        book = db.session.query(Book).filter_by(uuid=uuid).first()
         if not book:
             return '', 404
-        return book, 200
+        return book.to_dict(), 200
 
     def post(self):
         book_json = request.json
-        return create_book(book_json), 201
+        if not book_json:
+            return {'message': 'Wrong data'}, 400
+        try:
+            book = Book(
+                title=book_json['title'],
+                author=book_json['author'],
+                price=book_json['price'],
+                ratting=book_json['ratting']
+            )
+            db.session.add(book)
+            db.session.commit()
+        except (ValueError, KeyError):
+            return {'message': 'Wrong data'}, 400
+        return {'message': 'Created successfully'}, 201
 
-    def put(self):
-        pass
+    def put(self, uuid):
+        book_json = request.json
+        if not book_json:
+            return {'message': 'Wrong data'}, 400
+        try:
+            db.session.query(Book).filter_by(uuid=uuid).update(
+                dict(
+                    title=book_json['title'],
+                    author=book_json['author'],
+                    price=book_json['price'],
+                    ratting=book_json['ratting']
+                )
+            )
+            db.session.commit()
+        except (ValueError, KeyError):
+            return {'message': 'Wrong data'}, 400
+        return {'message': 'Updated successfully'}, 200
 
-    def patch(self):
-        pass
+    def patch(self, uuid):
+        book = db.session.query(Book).filter_by(uuid=uuid).first()
+        if not book:
+            return '', 404
+        book_json = request.json
+        title = book_json.get('title')
+        author = book_json.get('author'),
+        price = book_json.get('price'),
+        ratting = book_json.get('ratting')
 
-    def delete(self):
-        pass
+        if title:
+            book.title = title
+        elif author:
+            book.author = author
+        elif price:
+            book.author = price
+        elif ratting:
+            book.author = ratting
+
+        db.session.add(book)
+        db.session.commit()
+        return {'message': 'Updated successfully'}, 200
+
+    def delete(self, uuid):
+        book = db.session.query(Book).filter_by(uuid=uuid).first()
+        if not book:
+            return '', 404
+        db.session.delete(book)
+        db.session.commit()
+        return '', 204
 
 
 api.add_resource(BookListAPI, '/books', '/books/<uuid>', strict_slashes=False)

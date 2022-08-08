@@ -1,5 +1,5 @@
 from src import db
-from src.models import Book
+from src.database.models import Book
 
 
 def populate_books():
